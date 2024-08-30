@@ -40,7 +40,7 @@ export class MemoOverview extends LitElement {
 	async updateMemos() {
 		const manager = await MemoManager.instance;
 		this.memos = await manager.getMemos();
-		this.memos.sort((a, b) => b.date - a.date);
+		this.memos.sort((a, b) => a.date - b.date);
 		this.requestUpdate();
 	}
 

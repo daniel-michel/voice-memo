@@ -90,6 +90,9 @@ ${this.memo.transcript.map((entry) => entry.text).join("\n")}</pre
 			background-color: oklch(from var(--color-theme) 25% 0.01 h);
 			padding: 0.5em;
 			border-radius: 0.5em;
+			min-width: 0;
+			white-space: pre-wrap;
+			word-break: break-word;
 		}
 	`;
 }

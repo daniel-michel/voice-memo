@@ -1,78 +1,51 @@
 import { LitElement, css, html } from "lit";
-import { classMap } from "lit/directives/class-map.js";
-import { customElement, property } from "lit/decorators.js";
-import { choose } from "lit/directives/choose.js";
+import { customElement } from "lit/decorators.js";
+import arrowDown from "./assets/arrow-down.svg";
 import "./view/memo-recorder";
 import "./view/memo-overview";
 
 @customElement("app-root")
 export class App extends LitElement {
-	@property({ type: String })
-	tab: "record" | "memos" = "record";
-
-	tabs = [
-		{
-			name: "record",
-			label: "Record",
-		},
-		{
-			name: "memos",
-			label: "Memos",
-		},
-	];
-
 	render() {
 		return html`
 			<main>
-				${choose(this.tab, [
-					["record", () => html`<memo-recorder></memo-recorder>`],
-					["memos", () => html`<memo-overview></memo-overview>`],
-				])}
+				<div class="main">
+					<img src=${arrowDown} alt="Scroll down" />
+					<memo-recorder></memo-recorder>
+				</div>
+				<div class="scroll-back">
+					<memo-overview></memo-overview>
+				</div>
 			</main>
-			<nav>
-				${this.tabs.map(
-					(tab) => html`
-						<button
-							@click=${() => (this.tab = tab.name as any)}
-							class=${classMap({ active: this.tab === tab.name })}
-						>
-							${tab.label}
-						</button>
-					`,
-				)}
-			</nav>
 		`;
 	}
 
 	static styles = css`
 		:host {
-			background-color: var(--color-bg);
 			height: 100%;
-			display: grid;
-			grid-template-rows: 1fr auto;
 		}
 
 		main {
-			min-height: 0;
-			display: grid;
+			display: flex;
+			height: 100%;
+			scroll-snap-type: y mandatory;
+			overflow: auto;
+			flex-direction: column-reverse;
+
+			> * {
+				scroll-snap-align: start;
+			}
 		}
 
-		nav {
+		.main {
+			height: 100vh;
+			min-height: 100vh;
 			display: grid;
-			grid-template-columns: repeat(2, 1fr);
-			background-color: #141414;
+			grid-template-rows: auto 1fr;
 
-			button {
-				font-size: 1.5rem;
-				background-color: transparent;
-				border: none;
-				padding: 0.8em;
-				cursor: pointer;
-
-				&.active {
-					background-color: var(--color-theme-bg);
-					color: var(--color-theme-text);
-				}
+			img {
+				place-self: center;
+				width: 2em;
 			}
 		}
 	`;
