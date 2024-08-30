@@ -1,4 +1,4 @@
-import { LitElement, css, html } from "lit";
+import { LitElement, css, html, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { Memo } from "../logic/memo";
 import trashIcon from "../assets/trash.svg";
@@ -15,6 +15,14 @@ export class MemoDetails extends LitElement {
 		}
 		const date = new Date(this.memo.date);
 		const dateStr = `${date.toDateString()} ${date.toLocaleTimeString()}`;
+		const hasTranscript = this.memo.transcript.some(
+			(entry) => entry.text.length > 0,
+		);
+		const transcriptElement = hasTranscript
+			? html`<pre class="transcript">
+${this.memo.transcript.map((entry) => entry.text).join("\n")}</pre
+				>`
+			: nothing;
 		return html` <header>
 				<h2>${dateStr}</h2>
 				<button @click=${this.deleteMemo}>
@@ -23,9 +31,7 @@ export class MemoDetails extends LitElement {
 			</header>
 			<div class="content">
 				<audio src=${URL.createObjectURL(this.memo.audio)} controls></audio>
-				<pre class="transcript">
-${this.memo.transcript.map((entry) => entry.text).join("\n")}</pre
-				>
+				${transcriptElement}
 			</div>`;
 	}
 
