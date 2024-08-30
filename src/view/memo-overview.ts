@@ -3,6 +3,7 @@ import { customElement } from "lit/decorators.js";
 import { Memo } from "../logic/memo";
 import { MemoManager } from "../logic/memo-manager";
 import "./memo-details";
+import { repeat } from "lit/directives/repeat.js";
 
 @customElement("memo-overview")
 export class MemoOverview extends LitElement {
@@ -27,8 +28,13 @@ export class MemoOverview extends LitElement {
 		if (!this.memos) {
 			return html`<div class="loading">Loading...</div>`;
 		}
+		if (this.memos.length === 0) {
+			return html`<div class="none">Your memos will appear here</div>`;
+		}
 		return html`<div class="list">
-			${this.memos.map(
+			${repeat(
+				this.memos,
+				(memo) => memo.id,
 				(memo) =>
 					html`<div class="memo-item">
 						<memo-details .memo=${memo}></memo-details>
@@ -51,10 +57,14 @@ export class MemoOverview extends LitElement {
 			overflow: auto;
 		}
 
-		.loading {
-			height: 100%;
+		.loading,
+		.none {
 			display: grid;
 			place-content: center;
+			padding: 1em;
+		}
+
+		.loading {
 			animation: pulse 1s backwards ease-in-out infinite alternate;
 			animation-delay: 0.5s;
 		}

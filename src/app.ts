@@ -22,7 +22,10 @@ export class App extends LitElement {
 
 	static styles = css`
 		:host {
+			display: blocK;
 			height: 100%;
+			width: 100%;
+			container-type: size;
 		}
 
 		main {
@@ -38,8 +41,8 @@ export class App extends LitElement {
 		}
 
 		.main {
-			height: 100vh;
-			min-height: 100vh;
+			height: 100cqh;
+			min-height: 100cqh;
 			display: grid;
 			grid-template-rows: auto 1fr;
 
