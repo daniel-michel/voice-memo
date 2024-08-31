@@ -101,6 +101,7 @@ export class MemoTranscript extends LitElement {
 		}
 
 		.generating {
+			grid-column: 1 / -1;
 			margin-top: 0.5em;
 			display: grid;
 			gap: 0.5em;
@@ -114,12 +115,12 @@ export class MemoTranscript extends LitElement {
 				background-color: var(--color-text-muted);
 				border-radius: 50%;
 				animation: bounce 0.4s infinite alternate;
-				animation-delay: calc(var(--n) * 0.1s);
+				animation-delay: calc(var(--n) * 0.13s);
 			}
 		}
 
 		@keyframes bounce {
-			to {
+			100% {
 				transform: translateY(-0.4em);
 			}
 		}

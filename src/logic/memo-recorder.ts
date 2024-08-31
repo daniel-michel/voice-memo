@@ -7,15 +7,10 @@ export class MemoRecorder extends EventTarget {
 	#stream?: MediaStream;
 	#mediaRecorder?: MediaRecorder;
 	#audio?: Blob;
-	// #speechRecorder: SpeechRecorder = new SpeechRecorder();
 	#recordingFinished = Promise.resolve();
 
 	constructor() {
 		super();
-		// this.#speechRecorder.addEventListener("result", (event) => {
-		// 	// @ts-ignore
-		// 	this.dispatchEvent(new CustomEvent("update", { detail: event.detail }));
-		// });
 	}
 
 	get recording() {
@@ -40,22 +35,16 @@ export class MemoRecorder extends EventTarget {
 			this.#audio = new Blob(chunks, { type: mediaRecorder.mimeType });
 			completer.resolve();
 		};
-		// this.#speechRecorder.start();
 		mediaRecorder.start();
 	}
 
 	async stop() {
 		this.#mediaRecorder?.stop();
 		this.#stream?.getTracks().forEach((track) => track.stop());
-		// await this.#speechRecorder.stop();
 		await this.#recordingFinished;
 		this.#stream = undefined;
 		this.#mediaRecorder = undefined;
 		this.dispatchEvent(new CustomEvent("update"));
-	}
-
-	getCurrentTranscript() {
-		// return this.#speechRecorder.getCurrentTranscript();
 	}
 
 	getMemo(): Memo {
@@ -65,10 +54,6 @@ export class MemoRecorder extends EventTarget {
 		return {
 			date: Date.now(),
 			audio: this.#audio!,
-			// transcript: this.#speechRecorder.getCurrentTranscript().map((result) => ({
-			// 	timeRange: [0, 0],
-			// 	text: result[0].transcript,
-			// })),
 		};
 	}
 }
