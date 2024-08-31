@@ -1,7 +1,8 @@
 import { TranscriptEntry } from "../memo";
 // From: https://github.com/ggerganov/whisper.cpp/tree/master/examples/whisper.wasm
 // @ts-ignore
-import { Module, Output } from "./libmain.js";
+// this file may not be bundled therefore it is separately in the public folder
+const { Module, Output } = await import(new URL("libmain.js", location.href));
 
 export class ModelManager {
 	static #instance?: Promise<ModelManager>;
