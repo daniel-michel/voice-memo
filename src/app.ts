@@ -49,6 +49,10 @@ export class App extends LitElement {
 			img {
 				place-self: center;
 				width: 2em;
+
+				@media (prefers-color-scheme: light) {
+					filter: invert(1);
+				}
 			}
 		}
 	`;

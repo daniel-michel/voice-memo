@@ -23,7 +23,7 @@ export class MemoDetails extends LitElement {
 ${this.memo.transcript.map((entry) => entry.text).join("\n")}</pre
 				>`
 			: nothing;
-		return html` <header>
+		return html`<header>
 				<h2>${dateStr}</h2>
 				<button @click=${this.deleteMemo}>
 					<img src=${trashIcon} alt="Delete" />
@@ -44,7 +44,7 @@ ${this.memo.transcript.map((entry) => entry.text).join("\n")}</pre
 
 	static styles = css`
 		:host {
-			background-color: #262d30;
+			background-color: var(--color-card-bg);
 			display: grid;
 			border-radius: 0.5em;
 		}
@@ -75,6 +75,12 @@ ${this.memo.transcript.map((entry) => entry.text).join("\n")}</pre
 				button:hover {
 					background-color: #1b1b1b;
 				}
+
+				img {
+					@media (prefers-color-scheme: light) {
+						filter: invert(1);
+					}
+				}
 			}
 		}
 
@@ -92,9 +98,10 @@ ${this.memo.transcript.map((entry) => entry.text).join("\n")}</pre
 		}
 
 		.transcript {
+			font: inherit;
 			margin: 0;
-			background-color: oklch(from var(--color-theme) 25% 0.01 h);
-			padding: 0.5em;
+			background-color: var(--color-input-bg);
+			padding: 0.5em 0.7em;
 			border-radius: 0.5em;
 			min-width: 0;
 			white-space: pre-wrap;

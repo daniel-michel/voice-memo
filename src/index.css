@@ -1,10 +1,20 @@
 :root {
-	color-scheme: dark;
-	--color-text: white;
-	--color-theme: oklch(68.23% 0.1751 246.71);
-	--color-bg: oklch(from var(--color-theme) 20% 0.01 h);
-	--color-theme-bg: oklch(from var(--color-theme) 22% 0.0225 h);
-	--color-theme-text: oklch(from var(--color-theme) 80% 0.0983 h);
+	color-scheme: light dark;
+	--color-text: light-dark(black, white);
+	--color-theme: #1a2442;
+	--color-bg: light-dark(
+		oklch(from var(--color-theme) 95% 0.02 h),
+		oklch(from var(--color-theme) 17% 0.01 h)
+	);
+	--color-card-bg: light-dark(
+		oklch(from var(--color-theme) 80% 0.06 h),
+		oklch(from var(--color-theme) 25% 0.017 h)
+	);
+	--color-input-bg: light-dark(
+		oklch(from var(--color-theme) 85% 0.03 h),
+		oklch(from var(--color-theme) 21% 0.012 h)
+	);
+	--icon-color: light-dark(black, white);
 }
 
 :root {
@@ -17,4 +27,5 @@ body {
 	height: 100%;
 	margin: 0;
 	background-color: var(--color-bg);
+	color: var(--color-text);
 }

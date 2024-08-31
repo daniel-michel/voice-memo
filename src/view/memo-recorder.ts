@@ -78,7 +78,7 @@ export class MemoRecorderView extends LitElement {
 			overflow-y: auto;
 			padding: 1em;
 			box-sizing: border-box;
-			background-color: oklch(from var(--color-theme) 25% 0.01 h);
+			background-color: var(--color-input-bg);
 			border-radius: 0.5em;
 
 			.interim-wrapper {
@@ -127,7 +127,7 @@ export class MemoRecorderView extends LitElement {
 			border-radius: 50%;
 			display: grid;
 			place-items: center;
-			background-color: hsl(0, 0%, 20%);
+			background-color: light-dark(hsl(0, 0%, 50%), hsl(0, 0%, 20%));
 			transition: background-color 0.2s;
 			margin: 1.5em;
 
@@ -148,15 +148,11 @@ export class MemoRecorderView extends LitElement {
 		@keyframes recording {
 			from {
 				background-color: hsl(0, 100%, 40%);
-				box-shadow:
-					0 0 0 0em rgba(255, 31, 31, 0.5),
-					0.1em 0.1em 0.4em rgba(0, 0, 0, 0.315);
+				box-shadow: 0 0 0 0em rgba(255, 31, 31, 0.5);
 			}
 			to {
 				background-color: hsl(0, 100%, 65%);
-				box-shadow:
-					0 0 0 1em rgba(255, 31, 31, 0.5),
-					0.1em 0.1em 0.4em rgba(0, 0, 0, 0.315);
+				box-shadow: 0 0 0 1em rgba(255, 31, 31, 0.5);
 			}
 		}
 	`;
