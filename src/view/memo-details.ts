@@ -1,13 +1,23 @@
 import { LitElement, css, html, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { Memo } from "../logic/memo";
-import trashIcon from "../assets/trash.svg";
+import trashIcon from "../assets/icons/trash.svg";
 import { MemoManager } from "../logic/memo-manager";
+import "./transcript";
 
 @customElement("memo-details")
 export class MemoDetails extends LitElement {
 	@property({ type: Object })
 	memo?: Memo;
+
+	#memoManager?: MemoManager;
+
+	constructor() {
+		super();
+		MemoManager.instance.then((manager) => {
+			this.#memoManager = manager;
+		});
+	}
 
 	render() {
 		if (!this.memo) {
@@ -15,14 +25,23 @@ export class MemoDetails extends LitElement {
 		}
 		const date = new Date(this.memo.date);
 		const dateStr = `${date.toDateString()} ${date.toLocaleTimeString()}`;
-		const hasTranscript = this.memo.transcript.some(
-			(entry) => entry.text.length > 0,
-		);
-		const transcriptElement = hasTranscript
-			? html`<pre class="transcript">
-${this.memo.transcript.map((entry) => entry.text).join("\n")}</pre
-				>`
-			: nothing;
+		const hasTranscript =
+			this.memo.transcript?.some((entry) => entry.text.length > 0) ?? false;
+		const generatingTranscript = this.memo?.id
+			? this.#memoManager?.getGeneratingTranscript(this.memo.id)
+			: undefined;
+		const transcriptElement = generatingTranscript
+			? html`
+					<memo-transcript
+						.transcript=${generatingTranscript}
+						generating
+					></memo-transcript>
+				`
+			: hasTranscript
+				? html`<memo-transcript
+						.transcript=${this.memo.transcript}
+					></memo-transcript>`
+				: nothing;
 		return html`<header>
 				<h2>${dateStr}</h2>
 				<button @click=${this.deleteMemo}>

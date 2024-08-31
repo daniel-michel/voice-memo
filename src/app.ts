@@ -1,6 +1,6 @@
 import { LitElement, css, html } from "lit";
 import { customElement } from "lit/decorators.js";
-import arrowDown from "./assets/arrow-down.svg";
+import arrowDown from "./assets/icons/arrow-down.svg";
 import "./view/memo-recorder";
 import "./view/memo-overview";
 

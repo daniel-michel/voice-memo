@@ -7,15 +7,15 @@ export class MemoRecorder extends EventTarget {
 	#stream?: MediaStream;
 	#mediaRecorder?: MediaRecorder;
 	#audio?: Blob;
-	#speechRecorder: SpeechRecorder = new SpeechRecorder();
+	// #speechRecorder: SpeechRecorder = new SpeechRecorder();
 	#recordingFinished = Promise.resolve();
 
 	constructor() {
 		super();
-		this.#speechRecorder.addEventListener("result", (event) => {
-			// @ts-ignore
-			this.dispatchEvent(new CustomEvent("update", { detail: event.detail }));
-		});
+		// this.#speechRecorder.addEventListener("result", (event) => {
+		// 	// @ts-ignore
+		// 	this.dispatchEvent(new CustomEvent("update", { detail: event.detail }));
+		// });
 	}
 
 	get recording() {
@@ -40,14 +40,14 @@ export class MemoRecorder extends EventTarget {
 			this.#audio = new Blob(chunks, { type: mediaRecorder.mimeType });
 			completer.resolve();
 		};
-		this.#speechRecorder.start();
+		// this.#speechRecorder.start();
 		mediaRecorder.start();
 	}
 
 	async stop() {
 		this.#mediaRecorder?.stop();
 		this.#stream?.getTracks().forEach((track) => track.stop());
-		await this.#speechRecorder.stop();
+		// await this.#speechRecorder.stop();
 		await this.#recordingFinished;
 		this.#stream = undefined;
 		this.#mediaRecorder = undefined;
@@ -55,7 +55,7 @@ export class MemoRecorder extends EventTarget {
 	}
 
 	getCurrentTranscript() {
-		return this.#speechRecorder.getCurrentTranscript();
+		// return this.#speechRecorder.getCurrentTranscript();
 	}
 
 	getMemo(): Memo {
@@ -65,10 +65,10 @@ export class MemoRecorder extends EventTarget {
 		return {
 			date: Date.now(),
 			audio: this.#audio!,
-			transcript: this.#speechRecorder.getCurrentTranscript().map((result) => ({
-				timestamp: 0, // TODO
-				text: result[0].transcript,
-			})),
+			// transcript: this.#speechRecorder.getCurrentTranscript().map((result) => ({
+			// 	timeRange: [0, 0],
+			// 	text: result[0].transcript,
+			// })),
 		};
 	}
 }
@@ -99,10 +99,8 @@ export class SpeechRecorder extends EventTarget {
 			const completer = Promise.withResolvers<void>();
 			this.#finished = completer.promise;
 			speechRecognition.addEventListener("end", () => {
-				console.log("speech recognition ended");
 				if (this.#speechRecognition) {
 					this.#speechRecognition.start();
-					console.log("restarting speech recognition");
 				} else {
 					if (this.#currentTranscript) {
 						this.#transcript = this.#transcript.concat(
@@ -119,12 +117,9 @@ export class SpeechRecorder extends EventTarget {
 	}
 
 	async stop() {
-		console.log("stopping speech recognition");
 		this.#speechRecognition?.stop();
-		console.log(this.#transcript, this.#currentTranscript);
 		this.#speechRecognition = undefined;
 		await this.#finished;
-		console.log("stopped speech recognition");
 	}
 
 	getCurrentTranscript(): SpeechRecognitionResult[] {

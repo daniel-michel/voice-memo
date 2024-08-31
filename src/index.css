@@ -1,10 +1,19 @@
 :root {
 	color-scheme: light dark;
 	--color-text: light-dark(black, white);
-	--color-theme: #1a2442;
+	--color-text-muted: light-dark(#666, #999);
+	--color-theme: #1f336e;
+	--color-primary: light-dark(
+		oklch(from var(--color-theme) 60% 0.2 h),
+		oklch(from var(--color-theme) 40% 0.18 h)
+	);
 	--color-bg: light-dark(
 		oklch(from var(--color-theme) 95% 0.02 h),
 		oklch(from var(--color-theme) 17% 0.01 h)
+	);
+	--color-modal-bg: light-dark(
+		oklch(from var(--color-theme) 95% 0.04 h),
+		oklch(from var(--color-theme) 30% 0.01 h)
 	);
 	--color-card-bg: light-dark(
 		oklch(from var(--color-theme) 80% 0.06 h),

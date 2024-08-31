@@ -2,7 +2,7 @@ import { LitElement, css, html } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { customElement } from "lit/decorators.js";
-import micIcon from "../assets/mic.svg";
+import micIcon from "../assets/icons/mic.svg";
 import { MemoRecorder } from "../logic/memo-recorder";
 import { MemoManager } from "../logic/memo-manager";
 
@@ -13,28 +13,30 @@ export class MemoRecorderView extends LitElement {
 	#requestUpdateCallback = () => this.requestUpdate();
 
 	render() {
+		const generateTranscriptElements = (
+			transcript: SpeechRecognitionResult[],
+		) =>
+			transcript.map((result) =>
+				result.isFinal
+					? result[0].transcript
+					: html`<span class="interim-wrapper"
+							><span class="interim"
+								>${[...result].map(
+									(alternative) => html`
+										<span
+											class="alternative"
+											style=${styleMap({
+												"--confidence": alternative.confidence,
+											})}
+											>${alternative.transcript}</span
+										>
+									`,
+								)}</span
+							></span
+						>`,
+			);
 		return html` <!-- <div class="audio"></div> -->
-			<div class="transcript">
-				${this.#recorder?.getCurrentTranscript().map((result) =>
-					result.isFinal
-						? result[0].transcript
-						: html`<span class="interim-wrapper"
-								><span class="interim"
-									>${[...result].map(
-										(alternative) => html`
-											<span
-												class="alternative"
-												style=${styleMap({
-													"--confidence": alternative.confidence,
-												})}
-												>${alternative.transcript}</span
-											>
-										`,
-									)}</span
-								></span
-							>`,
-				)}
-			</div>
+			<div class="transcript"></div>
 			<button
 				class=${classMap({
 					record: true,
@@ -50,10 +52,11 @@ export class MemoRecorderView extends LitElement {
 		if (this.#recorder?.recording) {
 			await this.#recorder.stop();
 			const memo = this.#recorder.getMemo();
-			const manager = await MemoManager.instance;
-			manager.addMemo(memo);
 			this.#recorder.removeEventListener("update", this.#requestUpdateCallback);
 			this.#recorder = undefined;
+			const manager = await MemoManager.instance;
+			const id = await manager.addMemo(memo);
+			manager.generateMemoTranscript(id);
 		} else {
 			this.#recorder = new MemoRecorder();
 			this.#recorder.addEventListener("update", this.#requestUpdateCallback);
