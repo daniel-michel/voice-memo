@@ -1,6 +1,5 @@
 import { LitElement, css, html } from "lit";
 import { classMap } from "lit/directives/class-map.js";
-import { styleMap } from "lit/directives/style-map.js";
 import { customElement } from "lit/decorators.js";
 import micIcon from "../assets/icons/mic.svg";
 import { MemoRecorder } from "../logic/memo-recorder";
@@ -13,28 +12,6 @@ export class MemoRecorderView extends LitElement {
 	#requestUpdateCallback = () => this.requestUpdate();
 
 	render() {
-		const generateTranscriptElements = (
-			transcript: SpeechRecognitionResult[],
-		) =>
-			transcript.map((result) =>
-				result.isFinal
-					? result[0].transcript
-					: html`<span class="interim-wrapper"
-							><span class="interim"
-								>${[...result].map(
-									(alternative) => html`
-										<span
-											class="alternative"
-											style=${styleMap({
-												"--confidence": alternative.confidence,
-											})}
-											>${alternative.transcript}</span
-										>
-									`,
-								)}</span
-							></span
-						>`,
-			);
 		return html` <!-- <div class="audio"></div> -->
 			<div class="transcript"></div>
 			<button
