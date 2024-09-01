@@ -85,7 +85,9 @@ export class MemoDetails extends LitElement {
 		const audio = this.memo.audio;
 		const date = new Date(this.memo.date);
 		const fileName = `memo-${date.toISOString()}`;
-		const files = [new File([audio], fileName, { type: audio.type })];
+		const files = [
+			new File([audio], fileName, { type: cleanMimeType(audio.type) }),
+		];
 		const text = this.memo.transcript?.map((entry) => entry.text).join("\n");
 		const shareData = {
 			title: `Memo ${dateTimeToString(date)}`,
@@ -168,4 +170,9 @@ export class MemoDetails extends LitElement {
 			word-break: break-word;
 		}
 	`;
+}
+
+function cleanMimeType(type: string): string {
+	const parts = type.split(";");
+	return parts[0];
 }
