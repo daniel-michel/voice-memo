@@ -43,7 +43,7 @@ export class MemoTranscript extends LitElement {
 			}
 		}
 		if (!transcript) {
-			return html`Loading...`;
+			return html``;
 		}
 		const hasTranscript =
 			transcript.some((entry) => entry.text.length > 0) || generating;

@@ -4,6 +4,7 @@ import { Memo } from "../logic/memo";
 import trashIcon from "../assets/icons/trash.svg";
 import { MemoManager } from "../logic/memo-manager";
 import "./transcript";
+import { showDialog } from "./modal/dialog";
 
 @customElement("memo-details")
 export class MemoDetails extends LitElement {
@@ -56,8 +57,15 @@ export class MemoDetails extends LitElement {
 
 	async deleteMemo() {
 		if (this.memo?.id) {
-			const manager = await MemoManager.instance;
-			await manager.deleteMemo(this.memo.id);
+			const result = await showDialog(
+				"Are you sure you want to delete this memo?",
+				[{ text: "Delete" }, { text: "Cancel" }],
+			);
+			if (result === "Delete") {
+				const manager = await MemoManager.instance;
+				await manager.deleteMemo(this.memo.id);
+			}
+		} else {
 		}
 	}
 
