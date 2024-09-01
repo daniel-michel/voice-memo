@@ -5,8 +5,9 @@
 	--color-theme: #1f336e;
 	--color-primary: light-dark(
 		oklch(from var(--color-theme) 60% 0.2 h),
-		oklch(from var(--color-theme) 40% 0.18 h)
+		oklch(from var(--color-theme) 80% 0.18 h)
 	);
+	--color-text-on-primary: light-dark(white, black);
 	--color-bg: light-dark(
 		oklch(from var(--color-theme) 95% 0.02 h),
 		oklch(from var(--color-theme) 17% 0.01 h)
