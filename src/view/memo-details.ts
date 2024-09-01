@@ -84,7 +84,9 @@ export class MemoDetails extends LitElement {
 		}
 		const audio = this.memo.audio;
 		const date = new Date(this.memo.date);
-		const fileName = `memo-${date.toISOString()}`;
+		const fileName = `memo-${date.toISOString()}.${getFileExtension(
+			audio.type,
+		)}`;
 		const files = [
 			new File([audio], fileName, { type: cleanMimeType(audio.type) }),
 		];
@@ -175,4 +177,18 @@ export class MemoDetails extends LitElement {
 function cleanMimeType(type: string): string {
 	const parts = type.split(";");
 	return parts[0];
+}
+
+const fileExtensionsForMimeTypes: { [mimeType: string]: string } = {
+	"audio/mpeg": "mp3",
+	"audio/mp3": "mp3",
+	"audio/ogg": "ogg",
+	"audio/wav": "wav",
+	"audio/webm": "weba",
+	"audio/x-m4a": "m4a",
+	"audio/flac": "flac",
+};
+
+function getFileExtension(type: string): string {
+	return fileExtensionsForMimeTypes[type] ?? "weba";
 }
