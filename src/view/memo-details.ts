@@ -1,10 +1,12 @@
 import { LitElement, css, html, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { Memo } from "../logic/memo";
+import shareIcon from "../assets/icons/share.svg";
 import trashIcon from "../assets/icons/trash.svg";
 import { MemoManager } from "../logic/memo-manager";
 import "./transcript";
 import { showDialog } from "./modal/dialog";
+import { dateTimeToString } from "../logic/time-util";
 
 @customElement("memo-details")
 export class MemoDetails extends LitElement {
@@ -25,7 +27,7 @@ export class MemoDetails extends LitElement {
 			return html`Loading...`;
 		}
 		const date = new Date(this.memo.date);
-		const dateStr = `${date.toDateString()} ${date.toLocaleTimeString()}`;
+		const dateStr = dateTimeToString(date);
 		const hasTranscript =
 			this.memo.transcript?.some((entry) => entry.text.length > 0) ?? false;
 		const generatingTranscript = this.memo?.id
@@ -45,9 +47,16 @@ export class MemoDetails extends LitElement {
 				: nothing;
 		return html`<header>
 				<h2>${dateStr}</h2>
-				<button @click=${this.deleteMemo}>
-					<img src=${trashIcon} alt="Delete" />
-				</button>
+				<div class="actions">
+					${!!navigator.share
+						? html`<button @click=${this.shareMemo}>
+								<img src=${shareIcon} alt="Share" />
+							</button>`
+						: nothing}
+					<button @click=${this.deleteMemo}>
+						<img src=${trashIcon} alt="Delete" />
+					</button>
+				</div>
 			</header>
 			<div class="content">
 				<audio src=${URL.createObjectURL(this.memo.audio)} controls></audio>
@@ -69,6 +78,24 @@ export class MemoDetails extends LitElement {
 		}
 	}
 
+	async shareMemo() {
+		if (!navigator.share || !this.memo) {
+			return;
+		}
+		const audio = this.memo.audio;
+		const date = new Date(this.memo.date);
+		const fileName = `memo-${date.toISOString()}`;
+		const files = [new File([audio], fileName, { type: audio.type })];
+		const text = this.memo.transcript?.map((entry) => entry.text).join("\n");
+		const shareData = {
+			title: `Memo ${dateTimeToString(date)}`,
+			text,
+			files,
+		};
+		console.log(shareData);
+		await navigator.share(shareData);
+	}
+
 	static styles = css`
 		:host {
 			background-color: var(--color-card-bg);
@@ -86,6 +113,12 @@ export class MemoDetails extends LitElement {
 				margin: 0;
 				font-size: 1.2em;
 				padding: 0.5em;
+				text-wrap: balance;
+			}
+
+			.actions {
+				display: flex;
+				gap: 0.3em;
 			}
 
 			button {
