@@ -7,7 +7,7 @@ export class MemoRecorder extends EventTarget {
 	#recordingStarted?: number;
 	#recordingDuration = 0;
 	#audioLevels: number[] = [];
-	#audioLevelSampleRate = 20;
+	#audioLevelSampleRate = 15;
 	#audioLevelInterval?: number;
 	#recordingFinished = Promise.resolve();
 

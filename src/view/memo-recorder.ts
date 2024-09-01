@@ -81,7 +81,6 @@ export class MemoRecorderView extends LitElement {
 	}
 
 	#renderAudio() {
-		console.log("render audio");
 		const canvas = this.#audioCanvasRef.value;
 		const context = canvas?.getContext("2d");
 		if (!canvas || !context) {
@@ -100,14 +99,10 @@ export class MemoRecorderView extends LitElement {
 		const timeScale = canvas.width / visibleTime;
 		const barDistance = timeScale / (recorder.audioLevelSampleRate / 1_000);
 		const maxBars = Math.ceil(canvas.width / barDistance);
-		console.log({
-			audioLevels,
-			time,
-			visibleTime,
-			timeScale,
-			barDistance,
-			maxBars,
-		});
+
+		context.lineWidth = barDistance * 0.5;
+		context.lineCap = "round";
+
 		for (let i = 0; i < maxBars; i++) {
 			const index = audioLevels.length - i - 1;
 			if (index < 0) {
@@ -122,8 +117,6 @@ export class MemoRecorderView extends LitElement {
 			const x = canvas.width - sampleTimeInPast * timeScale;
 			const height = displayStrength * canvas.height;
 			context.strokeStyle = `hsl(0, 0%, ${50 + displayStrength * 50}%)`;
-			context.lineWidth = barDistance * 0.5;
-			context.lineCap = "round";
 			context.beginPath();
 			context.moveTo(x, canvas.height / 2 - height / 2);
 			context.lineTo(x, canvas.height / 2 + height / 2);
@@ -143,9 +136,9 @@ export class MemoRecorderView extends LitElement {
 		.audio {
 			background-color: var(--color-input-bg);
 			width: 100%;
-			max-height: 100%;
 			min-height: 0;
-			aspect-ratio: 2 / 1;
+			max-height: 30vh;
+			aspect-ratio: 3 / 1;
 			border-radius: 0.5em;
 		}
 

@@ -96,7 +96,6 @@ export class MemoDetails extends LitElement {
 			text,
 			files,
 		};
-		console.log(shareData);
 		await navigator.share(shareData);
 	}
 
