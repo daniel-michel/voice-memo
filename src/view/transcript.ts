@@ -1,26 +1,56 @@
 import { LitElement, css, html } from "lit";
 import { styleMap } from "lit/directives/style-map.js";
 import { customElement, property } from "lit/decorators.js";
-import { Transcript } from "../logic/memo";
+import { Memo, Transcript } from "../logic/memo";
+import { MemoManager } from "../logic/memo-manager";
 
 @customElement("memo-transcript")
 export class MemoTranscript extends LitElement {
 	@property({ type: Array })
 	transcript?: Transcript;
 
+	@property({ type: Object })
+	memo?: Memo;
+
 	@property({ type: Boolean })
 	generating: boolean = false;
 
+	#memoManager?: MemoManager;
+
+	constructor() {
+		super();
+		MemoManager.instance.then((manager) => {
+			this.#memoManager = manager;
+			this.#memoManager.addEventListener("change", () => {
+				this.requestUpdate();
+			});
+		});
+	}
+
 	render() {
-		if (!this.transcript) {
+		let transcript = this.transcript;
+		let generating = this.generating;
+		if (this.memo) {
+			const generatingTranscript = this.#memoManager?.getGeneratingTranscript(
+				this.memo?.id ?? -1,
+			);
+			if (generatingTranscript) {
+				transcript = generatingTranscript;
+				generating = true;
+			} else {
+				transcript = this.memo.transcript;
+				generating = false;
+			}
+		}
+		if (!transcript) {
 			return html`Loading...`;
 		}
 		const hasTranscript =
-			this.transcript.some((entry) => entry.text.length > 0) || this.generating;
+			transcript.some((entry) => entry.text.length > 0) || generating;
 		if (!hasTranscript) {
 			return html`No transcript available`;
 		}
-		const transcript = this.transcript.map(
+		const transcriptElements = transcript.map(
 			(entry) => html`
 				<div class="entry">
 					<div class="time">
@@ -31,7 +61,7 @@ export class MemoTranscript extends LitElement {
 				</div>
 			`,
 		);
-		return html`${transcript}${this.generating
+		return html`${transcriptElements}${generating
 			? html`<div class="generating">
 					${[1, 2, 3].map(
 						(n) =>

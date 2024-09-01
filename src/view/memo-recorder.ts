@@ -4,16 +4,41 @@ import { customElement } from "lit/decorators.js";
 import micIcon from "../assets/icons/mic.svg";
 import { MemoRecorder } from "../logic/memo-recorder";
 import { MemoManager } from "../logic/memo-manager";
+import { observeResize } from "./directives/observe-resize";
+import { createRef, ref } from "lit/directives/ref.js";
+import { Memo } from "../logic/memo";
 
 @customElement("memo-recorder")
 export class MemoRecorderView extends LitElement {
 	#recorder?: MemoRecorder;
-
+	#memo?: Memo;
+	#animationFrameRequest?: number;
 	#requestUpdateCallback = () => this.requestUpdate();
+	#audioCanvasRef = createRef<HTMLCanvasElement>();
+
+	constructor() {
+		super();
+		MemoManager.instance.then((manager) => {
+			manager.addEventListener("change", async () => {
+				if (this.#memo?.id) {
+					this.#memo = await manager.getMemo(this.#memo.id);
+				}
+				this.requestUpdate();
+			});
+		});
+	}
 
 	render() {
-		return html` <!-- <div class="audio"></div> -->
-			<div class="transcript"></div>
+		return html`<canvas
+				class="audio"
+				${ref(this.#audioCanvasRef)}
+				${observeResize(() => this.#renderAudio())}
+			></canvas>
+			<div class="transcript">
+				${this.#memo
+					? html`<memo-transcript .memo=${this.#memo}></memo-transcript>`
+					: ""}
+			</div>
 			<button
 				class=${classMap({
 					record: true,
@@ -30,28 +55,98 @@ export class MemoRecorderView extends LitElement {
 			await this.#recorder.stop();
 			const memo = this.#recorder.getMemo();
 			this.#recorder.removeEventListener("update", this.#requestUpdateCallback);
-			this.#recorder = undefined;
 			const manager = await MemoManager.instance;
 			const id = await manager.addMemo(memo);
 			manager.generateMemoTranscript(id);
+			this.#memo = await manager.getMemo(id);
 		} else {
 			this.#recorder = new MemoRecorder();
 			this.#recorder.addEventListener("update", this.#requestUpdateCallback);
 			await this.#recorder.start();
+			if (!this.#animationFrameRequest) {
+				this.#animationLoop();
+			}
 		}
 		this.requestUpdate();
+	}
+
+	#animationLoop() {
+		this.#animationFrameRequest = undefined;
+		if (this.#recorder?.recording) {
+			this.#animationFrameRequest = requestAnimationFrame(() =>
+				this.#animationLoop(),
+			);
+		}
+		this.#renderAudio();
+	}
+
+	#renderAudio() {
+		console.log("render audio");
+		const canvas = this.#audioCanvasRef.value;
+		const context = canvas?.getContext("2d");
+		if (!canvas || !context) {
+			return;
+		}
+		canvas.width = canvas.clientWidth * devicePixelRatio;
+		canvas.height = canvas.clientHeight * devicePixelRatio;
+
+		const recorder = this.#recorder;
+		if (!recorder) {
+			return;
+		}
+		const audioLevels = recorder.audioLevels;
+		const time = recorder.duration;
+		const visibleTime = 3_000;
+		const timeScale = canvas.width / visibleTime;
+		const barDistance = timeScale / (recorder.audioLevelSampleRate / 1_000);
+		const maxBars = Math.ceil(canvas.width / barDistance);
+		console.log({
+			audioLevels,
+			time,
+			visibleTime,
+			timeScale,
+			barDistance,
+			maxBars,
+		});
+		for (let i = 0; i < maxBars; i++) {
+			const index = audioLevels.length - i - 1;
+			if (index < 0) {
+				break;
+			}
+			const audioLevel = audioLevels[index];
+			const sampleTimeInPast =
+				time - (index * 1_000) / recorder.audioLevelSampleRate;
+			const fadeInPercent = Math.min(1, sampleTimeInPast / 200);
+			const fadeInFactor = 0.5 * -Math.cos(fadeInPercent * Math.PI) + 0.5;
+			const displayStrength = (audioLevel / 255) ** 2 * fadeInFactor;
+			const x = canvas.width - sampleTimeInPast * timeScale;
+			const height = displayStrength * canvas.height;
+			context.strokeStyle = `hsl(0, 0%, ${50 + displayStrength * 50}%)`;
+			context.lineWidth = barDistance * 0.5;
+			context.lineCap = "round";
+			context.beginPath();
+			context.moveTo(x, canvas.height / 2 - height / 2);
+			context.lineTo(x, canvas.height / 2 + height / 2);
+			context.stroke();
+		}
 	}
 
 	static styles = css`
 		:host {
 			display: grid;
-			grid-template-rows: 1fr auto;
+			grid-template-rows: auto 1fr auto;
+			min-height: 0;
 			padding: 1em;
 			gap: 1em;
 		}
 
 		.audio {
-			background-color: var(--color-primary);
+			background-color: var(--color-input-bg);
+			width: 100%;
+			max-height: 100%;
+			min-height: 0;
+			aspect-ratio: 2 / 1;
+			border-radius: 0.5em;
 		}
 
 		.transcript {
