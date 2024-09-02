@@ -47,15 +47,16 @@ export class ToastModal extends LitElement {
 
 			opacity: 0;
 			scale: 0.8;
-			@starting-style {
-				opacity: 0;
-				scale: 0.8;
-			}
 		}
 
 		dialog[open] {
 			opacity: 1;
 			scale: 1;
+
+			@starting-style {
+				opacity: 0;
+				scale: 0.8;
+			}
 		}
 
 		p {

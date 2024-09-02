@@ -83,10 +83,6 @@ export class DialogModal extends LitElement {
 
 			opacity: 0;
 			scale: 0.8;
-			@starting-style {
-				opacity: 0;
-				scale: 0.8;
-			}
 
 			&::backdrop {
 				backdrop-filter: blur(0.3em);
@@ -98,18 +94,21 @@ export class DialogModal extends LitElement {
 			}
 		}
 
-		@starting-style {
-			dialog::backdrop {
-				opacity: 0;
-			}
-		}
-
 		dialog[open] {
 			opacity: 1;
 			scale: 1;
 
 			&::backdrop {
 				opacity: 1;
+			}
+
+			@starting-style {
+				opacity: 0;
+				scale: 0.8;
+
+				&::backdrop {
+					opacity: 0;
+				}
 			}
 		}
 
