@@ -1,92 +1,47 @@
 import { TranscriptEntry } from "../memo";
+import { singleton } from "../storage/instance";
+import { getWhisperModelStorage } from "../storage/storage";
 // From: https://github.com/ggerganov/whisper.cpp/tree/master/examples/whisper.wasm
-// @ts-ignore
 // this file may not be bundled therefore it is separately in the public folder
-const { Module, Output } = await import(new URL("libmain.js", location.href));
+const { Module, Output } = await import(
+	/* @vite-ignore */ new URL("libmain.js", location.href).href
+);
 
 export class ModelManager {
-	static #instance?: Promise<ModelManager>;
-
+	static getInstance = singleton(() => new ModelManager());
 	static get instance() {
-		if (!this.#instance) {
-			this.#instance = new Promise<ModelManager>((resolve) => {
-				const request = indexedDB.open("whisper", 1);
-				request.onupgradeneeded = () => {
-					const db = request.result;
-					db.createObjectStore("model", { keyPath: "name" });
-				};
-				request.onsuccess = () => {
-					resolve(new ModelManager(request.result));
-				};
-			});
-		}
-		return this.#instance;
+		return this.getInstance();
 	}
 
-	#db: IDBDatabase;
 	#models = new Map<string, Promise<WhisperModel>>();
 
-	constructor(db: IDBDatabase) {
-		this.#db = db;
+	async isModelCached(name: string) {
+		if (this.#models.has(name)) {
+			return true;
+		}
+		const storage = await getWhisperModelStorage();
+		return await storage.has(name);
 	}
 
-	isModelCached(name: string) {
-		return new Promise<boolean>((resolve, reject) => {
-			if (this.#models.has(name)) {
-				resolve(true);
-				return;
-			}
-			const request = this.#db
-				.transaction("model", "readonly")
-				.objectStore("model")
-				.get(name);
-			request.onsuccess = () => {
-				resolve(!!request.result);
-			};
-			request.onerror = () => {
-				reject(request.error);
-			};
-		});
+	async getModel(name: string) {
+		const fromCache = this.#models.get(name);
+		if (fromCache) {
+			return fromCache;
+		}
+		const storage = await getWhisperModelStorage();
+		const data = await storage.get(name);
+		if (!data) {
+			return;
+		}
+		const model = new WhisperModel(name, data);
+		this.#models.set(name, Promise.resolve(model));
+		return model;
 	}
 
-	getModel(name: string) {
-		return new Promise<WhisperModel | undefined>((resolve, reject) => {
-			if (this.#models.has(name)) {
-				resolve(this.#models.get(name));
-				return;
-			}
-			const request = this.#db
-				.transaction("model", "readonly")
-				.objectStore("model")
-				.get(name);
-			request.onsuccess = () => {
-				if (request.result) {
-					const model = new WhisperModel(name, request.result.data);
-					this.#models.set(name, Promise.resolve(model));
-					resolve(model);
-				} else {
-					resolve(undefined);
-				}
-			};
-			request.onerror = () => {
-				reject(request.error);
-			};
-		});
-	}
-
-	cacheModel(name: string, model: WhisperModel) {
-		return new Promise<void>((resolve, reject) => {
-			const request = this.#db
-				.transaction("model", "readwrite")
-				.objectStore("model")
-				.put({ name, data: model.data });
-			request.onsuccess = () => {
-				resolve();
-			};
-			request.onerror = () => {
-				reject(request.error);
-			};
-		});
+	async cacheModel(name: string, model: WhisperModel) {
+		this.#models.set(name, Promise.resolve(model));
+		const storage = await getWhisperModelStorage();
+		await storage.set(name, model.data);
 	}
 
 	async loadModel(
@@ -97,11 +52,11 @@ export class ModelManager {
 		if (loading) {
 			return loading;
 		}
-		const cachedModel = await this.getModel(name);
-		if (cachedModel) {
-			return cachedModel;
-		}
 		const promise = (async () => {
+			const cachedModel = await this.getModel(name);
+			if (cachedModel) {
+				return cachedModel;
+			}
 			const data = await loader();
 			const model = new WhisperModel(name, data);
 			await this.cacheModel(name, model);

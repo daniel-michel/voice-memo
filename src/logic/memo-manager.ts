@@ -2,137 +2,76 @@ import { showToast } from "../view/modal/toast";
 import { fetchWithProgress } from "./fetch-util";
 import { Memo, Transcript } from "./memo";
 import { ModelManager } from "./speech-recognition/whisper";
+import { IndexedDBMap } from "./storage/indexeddb-map";
+import { singleton } from "./storage/instance";
+import { getMemoStorage, MemoStorage } from "./storage/storage";
 
 export class MemoManager extends EventTarget {
-	static #instance: Promise<MemoManager>;
+	static getInstance = singleton(async () => {
+		const storage = await getMemoStorage();
+		return new MemoManager(storage);
+	});
 	static get instance() {
-		if (!this.#instance) {
-			this.#instance = new Promise((resolve, reject) => {
-				const request = indexedDB.open("memo", 1);
-				request.onupgradeneeded = () => {
-					const db = request.result;
-					db.createObjectStore("memo", { keyPath: "id", autoIncrement: true });
-				};
-				request.onsuccess = () => {
-					resolve(new MemoManager(request.result));
-				};
-				request.onerror = () => {
-					reject(request.error);
-				};
-			});
-		}
-		return this.#instance;
+		return this.getInstance();
 	}
 
-	#db: IDBDatabase;
+	#storage: IndexedDBMap<MemoStorage>;
 	#generatingTranscript = new Map<number, Transcript>();
 
-	constructor(db: IDBDatabase) {
+	constructor(storage: IndexedDBMap<MemoStorage>) {
 		super();
-		this.#db = db;
+		this.#storage = storage;
 		this.init();
 	}
 
 	async init() {
-		this.generateTranscriptForMemosWhereMissing();
+		await this.generateTranscriptForMemosWhereMissing();
 	}
 
-	generateTranscriptForMemosWhereMissing() {
-		const store = this.#db.transaction("memo", "readonly").objectStore("memo");
-		const request = store.getAll();
-		request.onsuccess = () => {
-			const memos = request.result as Memo[];
-			for (const memo of memos) {
-				if (!memo.transcript && memo.id) {
-					this.generateMemoTranscript(memo.id);
-				}
+	async generateTranscriptForMemosWhereMissing() {
+		const values = await this.#storage.values();
+		for (const memo of values) {
+			if (!memo.transcript && memo.id) {
+				this.generateMemoTranscript(memo.id);
 			}
-		};
+		}
 	}
 
 	async addMemo(memo: Memo) {
-		const store = this.#db.transaction("memo", "readwrite").objectStore("memo");
-		const request = store.add(memo);
-		const promise = new Promise<number>((resolve, reject) => {
-			request.onsuccess = () => {
-				resolve(request.result as number);
-			};
-			request.onerror = () => {
-				reject(request.error);
-			};
-		});
-		promise.finally(() => {
+		const result = this.#storage.put(memo);
+		result.finally(() => {
 			this.dispatchEvent(new Event("change"));
 		});
-		return promise;
+		return await result;
 	}
 
 	async updateMemoTranscript(id: number, transcript: Memo["transcript"]) {
-		const transaction = this.#db.transaction("memo", "readwrite");
-		const store = transaction.objectStore("memo");
-		const request = store.get(id);
-		const promise = new Promise<void>((resolve, reject) => {
-			request.onsuccess = () => {
-				const memo = request.result as Memo;
-				if (memo) {
-					memo.transcript = transcript;
-					store.put(memo);
-					resolve();
-				} else {
-					reject(new Error("Memo not found"));
-				}
-			};
-			request.onerror = () => {
-				reject(request.error);
-			};
-		});
-		promise.finally(() => {
+		const memo = await this.getMemo(id);
+		if (!memo) {
+			throw new Error("Memo not found");
+		}
+		memo.transcript = transcript;
+		const result = this.#storage.put(memo);
+		result.finally(() => {
 			this.dispatchEvent(new Event("change"));
 		});
-		return promise;
+		await result;
 	}
 
 	async deleteMemo(id: number) {
-		const store = this.#db.transaction("memo", "readwrite").objectStore("memo");
-		const request = store.delete(id);
-		const promise = new Promise<void>((resolve, reject) => {
-			request.onsuccess = () => {
-				resolve();
-			};
-			request.onerror = () => {
-				reject(request.error);
-			};
-		});
-		promise.finally(() => {
+		const result = this.#storage.delete(id);
+		result.finally(() => {
 			this.dispatchEvent(new Event("change"));
 		});
-		return promise;
+		await result;
 	}
 
 	async getMemo(id: number) {
-		const store = this.#db.transaction("memo", "readonly").objectStore("memo");
-		const request = store.get(id);
-		return new Promise<Memo>((resolve, reject) => {
-			request.onsuccess = () => {
-				resolve(request.result as Memo);
-			};
-			request.onerror = () => {
-				reject(request.error);
-			};
-		});
+		return await this.#storage.get(id);
 	}
 
 	async getMemos() {
-		const store = this.#db.transaction("memo", "readonly").objectStore("memo");
-		const request = store.getAll();
-		return new Promise<Memo[]>((resolve, reject) => {
-			request.onsuccess = () => {
-				resolve(request.result as Memo[]);
-			};
-			request.onerror = () => {
-				reject(request.error);
-			};
-		});
+		return await this.#storage.values();
 	}
 
 	async generateMemoTranscript(id: number) {
