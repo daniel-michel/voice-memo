@@ -148,42 +148,6 @@ export class MemoRecorderView extends LitElement {
 			box-sizing: border-box;
 			background-color: var(--color-input-bg);
 			border-radius: 0.5em;
-
-			.interim-wrapper {
-				display: inline-block;
-				margin: 0 0.2em;
-				height: 1.5em;
-			}
-
-			.interim {
-				display: grid;
-				background-color: oklch(from var(--color-theme) 35% 0.01 h);
-				border-radius: 0.5em;
-				overflow: clip;
-				box-shadow: 0.1em 0.1em 0.5em hsla(0, 0%, 0%, 0.3);
-
-				.alternative {
-					position: relative;
-					z-index: 1;
-					padding: 0.2em 0.5em;
-
-					&:not(:last-child) {
-						border-bottom: 0.1em solid hsl(0, 0%, 50%);
-					}
-
-					&::before {
-						content: "";
-						z-index: -1;
-						display: block;
-						position: absolute;
-						top: 0;
-						left: 0;
-						width: calc(var(--confidence) * 100%);
-						height: 100%;
-						background-color: oklch(from var(--color-theme) 35% 0.07 h);
-					}
-				}
-			}
 		}
 
 		.record {
