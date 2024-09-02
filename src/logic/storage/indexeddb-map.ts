@@ -81,7 +81,7 @@ export class IndexedDBMap<DataFormat extends { [key: number | string]: any }> {
 			.transaction(this.#storeName)
 			.objectStore(this.#storeName)
 			.get(key);
-		return new Promise<DataFormat[Key]>((resolve, reject) => {
+		return new Promise<DataFormat[Key] | undefined>((resolve, reject) => {
 			request.onerror = () => reject(request.error);
 			request.onsuccess = () => resolve(request.result);
 		});
