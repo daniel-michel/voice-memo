@@ -9,6 +9,22 @@
 		<script src="./service-worker.js"></script>
 		<link rel="stylesheet" href="./src/index.css" />
 		<script type="module" src="/src/app.ts"></script>
+
+		<script>
+			const themeMediaQuery = window.matchMedia(
+				"(prefers-color-scheme: light)",
+			);
+
+			updateThemeAttribute();
+			themeMediaQuery.addEventListener("change", updateThemeAttribute);
+
+			function updateThemeAttribute() {
+				document.documentElement.setAttribute(
+					"data-theme",
+					themeMediaQuery.matches ? "light" : "dark",
+				);
+			}
+		</script>
 	</head>
 	<body>
 		<app-root> </app-root>

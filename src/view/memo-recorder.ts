@@ -159,7 +159,7 @@ export class MemoRecorderView extends LitElement {
 			border-radius: 50%;
 			display: grid;
 			place-items: center;
-			background-color: light-dark(hsl(0, 0%, 50%), hsl(0, 0%, 20%));
+			background-color: light-dark(hsl(0, 0%, 80%), hsl(0, 0%, 20%));
 			transition: background-color 0.2s;
 			margin: 1.5em;
 
@@ -169,7 +169,7 @@ export class MemoRecorderView extends LitElement {
 			}
 
 			&:hover {
-				background-color: hsl(0, 40%, 53%);
+				background-color: var(--color-record-hover);
 			}
 
 			&.recording {
@@ -179,12 +179,12 @@ export class MemoRecorderView extends LitElement {
 
 		@keyframes recording {
 			from {
-				background-color: hsl(0, 100%, 40%);
-				box-shadow: 0 0 0 0em rgba(255, 31, 31, 0.5);
+				background-color: var(--color-record-blink);
+				box-shadow: 0 0 0 0em var(--color-record-shadow);
 			}
 			to {
-				background-color: hsl(0, 100%, 65%);
-				box-shadow: 0 0 0 1em rgba(255, 31, 31, 0.5);
+				background-color: var(--color-record);
+				box-shadow: 0 0 0 1em var(--color-record-shadow);
 			}
 		}
 	`;

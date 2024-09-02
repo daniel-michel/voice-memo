@@ -25,6 +25,20 @@
 		oklch(from var(--color-theme) 21% 0.012 h)
 	);
 	--icon-color: light-dark(black, white);
+
+	--color-record: oklch(45.55% 0.1619 27.24);
+	--color-record-blink: oklch(38.72% 0.1455 27.24);
+
+	--color-record-shadow: oklch(from var(--color-record-blink) l c h / 0.8);
+	--color-record-hover: light-dark(
+		oklch(77.6% 0.1038 27.24),
+		oklch(38.13% 0.0972 27.24)
+	);
+}
+
+:root[data-theme="light"] {
+	--color-record: oklch(64.84% 0.1949 27.24);
+	--color-record-blink: oklch(78.78% 0.1229 27.24);
 }
 
 :root {
